@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>ระบบจองรถราชการ สมบูรณ์</title>
+<style>
+body{margin:0;font-family:"TH Sarabun New",Arial,sans-serif;background:#f4f6fb;scroll-behavior:smooth;color:#333;}
+h1,h2,h3{margin:0;}
+a{color:inherit;text-decoration:none;}
+button{cursor:pointer}
+
+/* Navbar */
+nav{position:fixed;top:0;width:100%;background:linear-gradient(90deg,#003366,#0055aa);display:flex;justify-content:center;align-items:center;z-index:1000;box-shadow:0 2px 5px rgba(0,0,0,0.2);}
+nav a{color:white;margin:0 15px;font-weight:bold;font-size:18px;transition:color 0.3s;}
+nav a:hover{color:#ffd700;}
+
+/* Sections */
+section,header{padding:100px 20px;min-height:100vh;opacity:0;transform:translateY(30px);transition:all 0.8s ease;}
+section.visible,header.visible{opacity:1;transform:translateY(0);}
+header#home{position:relative;background:linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.4)),url("https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1350&q=80") center/cover no-repeat fixed;color:white;text-align:center;}
+header h1{font-size:36px;margin-bottom:10px;}
+header p{font-size:20px;margin-bottom:30px;}
+
+/* Carousel */
+.slideshow{display:flex;overflow:hidden;width:100%;justify-content:center;align-items:center;margin-top:50px;margin-bottom:50px;position:relative;height:300px;}
+.driver-card{position:absolute;top:0;left:50%;transform:translateX(-50%) scale(0.8);transition:all 0.8s ease;opacity:0;width:250px;background:rgba(255,255,255,0.95);border-radius:20px;padding:20px;text-align:center;box-shadow:0 8px 20px rgba(0,0,0,0.3);}
+.driver-card img{width:200px;height:200px;border-radius:50%;object-fit:cover;margin-bottom:15px;}
+.driver-card.active{opacity:1;transform:translateX(-50%) scale(1);}
+
+/* Requirements */
+.requirements{background:rgba(0,0,60,0.9);padding:40px;border-radius:20px;max-width:1000px;margin:0 auto;text-align:left;font-size:22px;line-height:2;font-weight:bold;color:white;box-shadow:0 8px 20px rgba(0,0,0,0.4);position: relative;overflow: hidden;}
+.requirements h2{font-size:28px;margin-bottom:15px;}
+.requirements ul{list-style:disc inside;}
+@keyframes gradientText{0%{color:#00f;}25%{color:#0ff;}50%{color:#0f0;}75%{color:#ff0;}100%{color:#00f;}}
+.requirements li{animation: gradientText 6s infinite;}
+
+/* Containers */
+.container{width:90%;max-width:1000px;margin:0 auto;background:white;padding:20px;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.1);}
+h2{color:#004080;border-bottom:2px solid #004080;padding-bottom:5px;}
+label{display:block;margin-top:10px;font-weight:bold;}
+select,input{width:100%;padding:8px;margin-top:5px;border:1px solid #ccc;border-radius:4px;}
+button{margin-top:10px;padding:8px 12px;border:none;border-radius:4px;cursor:pointer;background:#004080;color:white;}
+button:hover{background:#003060;}
+button.cancel{background:#e74c3c;}
+.alert{color:red;margin-top:10px;font-weight:bold;white-space:pre-line;}
+.booking-item{border:1px solid #ccc;padding:10px;margin:10px 0;background:#f9f9f9;display:flex;justify-content:space-between;align-items:center;border-radius:4px;}
+.booking-left{display:flex;align-items:center;}
+.booking-left img{width:50px;height:50px;border-radius:5px;margin-right:10px;object-fit:cover;}
+
+/* History table */
+.history-table-container{max-height:400px;overflow-y:auto;margin-top:10px;border:1px solid #ccc;border-radius:5px;}
+.history-table{width:100%;border-collapse:collapse;}
+.history-table th, .history-table td{padding:8px;border:1px solid #ccc;text-align:center;font-size:16px;}
+.history-table th{background-color:#004080;color:white;position:sticky;top:0;z-index:1;}
+.pagination{margin-top:10px;text-align:center;}
+.pagination button{margin:0 2px;padding:5px 10px;background:#004080;color:white;border:none;border-radius:4px;cursor:pointer;}
+.pagination button.active{background:#ffd700;color:#003060;}
+
+/* Footer */
+footer{background:#003366;color:white;text-align:center;padding:20px;margin-top:40px;}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="#home">หน้าหลัก</a>
+  <a href="#booking">จองรถ</a>
+  <a href="#current">รายการจอง</a>
+  <a href="#history">ประวัติ</a>
+  <a href="#contact">ติดต่อเรา</a>
+</nav>
+
+<header id="home">
+  <h1>ระบบจองรถราชการ</h1>
+  <p>องค์การบริหารส่วนจังหวัด</p>
+  <div class="slideshow" id="driverSlideshowCarousel"></div>
+  <div class="requirements">
+    <h2>ข้อกำหนดในการยืมรถ</h2>
+    <ul>
+      <li style="animation-delay:0s;">ต้องขออนุญาตจากหัวหน้าหน่วยงานล่วงหน้าอย่างน้อย 1 วัน</li>
+      <li style="animation-delay:1s;">ห้ามใช้รถราชการเพื่อกิจกรรมส่วนตัว</li>
+      <li style="animation-delay:2s;">ต้องรักษาความสะอาดและเติมน้ำมันตามที่กำหนด</li>
+      <li style="animation-delay:3s;">รายงานผลการเดินทางหลังเสร็จสิ้น</li>
+      <li style="animation-delay:4s;">กรณีเกิดอุบัติเหตุ ต้องแจ้งเจ้าหน้าที่ทันที</li>
+    </ul>
+  </div>
+</header>
+
+<section id="booking">
+  <div class="container">
+    <h2>🚗 แบบฟอร์มจองรถ</h2>
+    <form id="bookingForm">
+      <label>คนขับ:
+        <select id="driver">
+          <option value="เบส" data-phone="081-111-1111" data-img="https://i.pravatar.cc/50?img=1">เบส</option>
+          <option value="โฟค" data-phone="082-222-2222" data-img="https://i.pravatar.cc/50?img=2">โฟค</option>
+          <option value="ตะวัน" data-phone="083-333-3333" data-img="https://i.pravatar.cc/50?img=3">ตะวัน</option>
+          <option value="คิม" data-phone="084-444-4444" data-img="https://i.pravatar.cc/50?img=4">คิม</option>
+          <option value="เติ้ล" data-phone="085-555-5555" data-img="https://i.pravatar.cc/50?img=5">เติ้ล</option>
+          <option value="เบียร์" data-phone="086-666-6666" data-img="https://i.pravatar.cc/50?img=6">เบียร์</option>
+        </select>
+      </label>
+      <label>รถ:
+        <select id="car">
+          <option value="รถตู้ 1" data-plate="1กก-1111" data-img="https://via.placeholder.com/50?text=Car1">รถตู้ 1</option>
+          <option value="รถตู้ 2" data-plate="2กก-2222" data-img="https://via.placeholder.com/50?text=Car2">รถตู้ 2</option>
+          <option value="รถตู้ 3" data-plate="3กก-3333" data-img="https://via.placeholder.com/50?text=Car3">รถตู้ 3</option>
+          <option value="รถตู้ 4" data-plate="4กก-4444" data-img="https://via.placeholder.com/50?text=Car4">รถตู้ 4</option>
+          <option value="รถตู้ 5" data-plate="5กก-5555" data-img="https://via.placeholder.com/50?text=Car5">รถตู้ 5</option>
+          <option value="รถตู้ 6" data-plate="6กก-6666" data-img="https://via.placeholder.com/50?text=Car6">รถตู้ 6</option>
+          <option value="รถตู้ 7" data-plate="7กก-7777" data-img="https://via.placeholder.com/50?text=Car7">รถตู้ 7</option>
+          <option value="รถตู้ 8" data-plate="8กก-8888" data-img="https://via.placeholder.com/50?text=Car8">รถตู้ 8</option>
+          <option value="รถตู้ 9" data-plate="9กก-9999" data-img="https://via.placeholder.com/50?text=Car9">รถตู้ 9</option>
+        </select>
+      </label>
+      <label>สถานที่: <input type="text" id="location" required></label>
+      <label>วันเริ่ม: <input type="date" id="dateFrom" required></label>
+      <label>วันสิ้นสุด: <input type="date" id="dateTo" required></label>
+      <label>เวลาเริ่ม: <input type="time" id="timeFrom" required></label>
+      <label>เวลาสิ้นสุด: <input type="time" id="timeTo" required></label>
+      <div id="alertBox" class="alert"></div>
+      <button type="submit" id="submitBtn">จอง</button>
+    </form>
+  </div>
+</section>
+
+<section id="current">
+  <div class="container">
+    <h2>📌 รายการจองปัจจุบัน</h2>
+    <div id="bookingsList"></div>
+  </div>
+</section>
+
+<section id="history">
+  <div class="container">
+    <h2>📖 ประวัติการเดินทาง</h2>
+    <div style="margin-top:20px; text-align:right;">
+      <input type="text" id="searchInput" placeholder="ค้นหา ชื่อคนขับ, รถ, สถานที่..." style="padding:5px; width:300px; border-radius:4px; border:1px solid #ccc;">
+      <button onclick="exportExcel()">📥 ดาวน์โหลด Excel</button>
+    </div>
+    <button id="clearHistoryBtn">ลบประวัติทั้งหมด</button>
+    <div id="historyList"></div>
+    <div class="pagination" id="historyPagination"></div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="container">
+    <h2>📞 ติดต่อเรา</h2>
+    <p>องค์การบริหารส่วนจังหวัด</p>
+    <p>โทร: 0XX-XXX-XXXX</p>
+    <p>อีเมล: info@provincial.go.th</p>
+  </div>
+</section>
+
+<footer>
+  &copy; 2025 องค์การบริหารส่วนจังหวัด
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script>
+window.onload = function() {
+  // --- Data ---
+  let bookings = JSON.parse(localStorage.getItem('bookings')||'[]');
+  let history = JSON.parse(localStorage.getItem('history')||'[]');
+  const alertBox = document.getElementById('alertBox');
+  const submitBtn = document.getElementById('submitBtn');
+
+  // --- Save ---
+  function save(){ localStorage.setItem('bookings',JSON.stringify(bookings)); localStorage.setItem('history',JSON.stringify(history)); }
+
+  // --- Overlaps check ---
+  function overlaps(b,newB){
+    const startA=new Date(b.dateFrom+'T'+b.timeFrom);
+    const endA=new Date(b.dateTo+'T'+b.timeTo);
+    const startB=new Date(newB.dateFrom+'T'+newB.timeFrom);
+    const endB=new Date(newB.dateTo+'T'+newB.timeTo);
+    return startA<=endB && endA>=startB;
+  }
+
+  // --- Availability check ---
+  function checkAvailability(){
+    alertBox.textContent='';
+    const newB={
+      driver:driver.value, car:car.value,
+      dateFrom:dateFrom.value, dateTo:dateTo.value,
+      timeFrom:timeFrom.value, timeTo:timeTo.value
+    };
+    let blocked=false;
+    bookings.forEach(b=>{
+      if(overlaps(b,newB)){
+        if(b.driver===driver.value){ alertBox.textContent+=`❌ คนขับ ${b.driver} ถูกจองแล้ว: ${b.dateFrom} ${b.timeFrom} - ${b.dateTo} ${b.timeTo}\n`; blocked=true; }
+        if(b.car===car.value){ alertBox.textContent+=`❌ รถ ${b.car} ถูกจองแล้ว: ${b.dateFrom} ${b.timeFrom} - ${b.dateTo} ${b.timeTo}\n`; blocked=true; }
+      }
+    });
+    submitBtn.disabled=blocked;
+  }
+
+  ['driver','car','dateFrom','dateTo','timeFrom','timeTo'].forEach(id=>{
+    document.getElementById(id).addEventListener('change',checkAvailability);
+  });
+
+  // --- Render bookings ---
+  function renderBookings(){
+    const container=document.getElementById('bookingsList');
+    if(bookings.length===0){ container.innerHTML='<p>ยังไม่มีการจอง</p>'; return; }
+    container.innerHTML='';
+    bookings.forEach((b,i)=>{
+      const div=document.createElement('div'); div.className='booking-item';
+      const driverPhone=document.querySelector(`#driver option[value='${b.driver}']`)?.dataset.phone||'-';
+      const driverImg=document.querySelector(`#driver option[value='${b.driver}']`)?.dataset.img||'';
+      const carPlate=document.querySelector(`#car option[value='${b.car}']`)?.dataset.plate||'-';
+      const carImg=document.querySelector(`#car option[value='${b.car}']`)?.dataset.img||'';
+      const leftDiv=document.createElement('div'); leftDiv.className='booking-left';
+      const imgDriver=document.createElement('img'); imgDriver.src=driverImg;
+      const imgCar=document.createElement('img'); imgCar.src=carImg;
+      const info=document.createElement('div');
+      info.textContent=`👤 ${b.driver} (☎ ${driverPhone}) | 🚗 ${b.car} [${carPlate}] | 📍 ${b.location} | ⏰ ${b.dateFrom} ${b.timeFrom} - ${b.dateTo} ${b.timeTo}`;
+      leftDiv.appendChild(imgDriver); leftDiv.appendChild(imgCar); leftDiv.appendChild(info);
+      const completeBtn=document.createElement('button'); completeBtn.textContent='เสร็จสิ้น';
+      completeBtn.onclick=()=>{ const f=bookings.splice(i,1)[0]; history.push(f); save(); renderBookings(); renderHistory(); };
+      const cancelBtn=document.createElement('button'); cancelBtn.textContent='ยกเลิก'; cancelBtn.className='cancel';
+      cancelBtn.onclick=()=>{ bookings.splice(i,1); save(); renderBookings(); renderHistory(); };
+      div.appendChild(leftDiv); div.appendChild(completeBtn); div.appendChild(cancelBtn); container.appendChild(div);
+    });
+  }
+
+  // --- Render history with pagination ---
+  let historyPage=1,historyPerPage=10;
+  function renderHistory(){
+    const container=document.getElementById('historyList'); if(history.length===0){ container.innerHTML='<p>ยังไม่มีประวัติ</p>'; return; }
+    const search=document.getElementById('searchInput').value.toLowerCase();
+    const filtered=history.filter(b=>b.driver.toLowerCase().includes(search)||b.car.toLowerCase().includes(search)||b.location.toLowerCase().includes(search));
+    const totalPages=Math.ceil(filtered.length/historyPerPage);
+    if(historyPage>totalPages) historyPage=totalPages||1;
+    const start=(historyPage-1)*historyPerPage,end=start+historyPerPage;
+    const pageData=filtered.slice(start,end);
+    container.innerHTML='<div class="history-table-container"><table class="history-table"><tr><th>คนขับ</th><th>โทรศัพท์</th><th>รถ</th><th>ทะเบียน</th><th>สถานที่</th><th>วันเริ่ม</th><th>วันสิ้นสุด</th><th>เวลา</th></tr>'+pageData.map(b=>{
+      let dp=document.querySelector(`#driver option[value='${b.driver}']`)?.dataset.phone||'-';
+      let cp=document.querySelector(`#car option[value='${b.car}']`)?.dataset.plate||'-';
+      return `<tr><td>${b.driver}</td><td>${dp}</td><td>${b.car}</td><td>${cp}</td><td>${b.location}</td><td>${b.dateFrom}</td><td>${b.dateTo}</td><td>${b.timeFrom} - ${b.timeTo}</td></tr>`;
+    }).join('')+'</table></div>';
+    const pagContainer=document.getElementById('historyPagination'); pagContainer.innerHTML='';
+    for(let i=1;i<=totalPages;i++){const btn=document.createElement('button'); btn.textContent=i; if(i===historyPage) btn.classList.add('active'); btn.onclick=()=>{historyPage=i; renderHistory();}; pagContainer.appendChild(btn);}
+  }
+
+  // --- Form submit ---
+  document.getElementById('bookingForm').addEventListener('submit',e=>{
+    e.preventDefault();
+    const newB={driver:driver.value,car:car.value,location:location.value,dateFrom:dateFrom.value,dateTo:dateTo.value,timeFrom:timeFrom.value,timeTo:timeTo.value};
+    bookings.push(newB); save(); renderBookings(); renderHistory(); bookingForm.reset(); submitBtn.disabled=false; alertBox.textContent='✅ จองสำเร็จ!';
+  });
+
+  // --- Clear history ---
+  document.getElementById('clearHistoryBtn').addEventListener('click',()=>{ if(confirm('ลบประวัติทั้งหมด?')){ history=[]; save(); renderHistory(); }});
+
+  // --- Driver carousel ---
+  const driverData=[...document.querySelectorAll('#driver option')].map(o=>({name:o.value,img:o.dataset.img,phone:o.dataset.phone}));
+  const carousel=document.getElementById('driverSlideshowCarousel');
+  let slideIndex=0;
+  function showSlideFull(){
+    carousel.innerHTML='';
+    driverData.forEach((d,i)=>{
+      const div=document.createElement('div'); div.className='driver-card';
+      if(i===slideIndex) div.classList.add('active');
+      div.innerHTML=`<img src="${d.img}" alt="${d.name}"><h3>${d.name}</h3><p>☎ ${d.phone}</p>`;
+      carousel.appendChild(div);
+    });
+    slideIndex=(slideIndex+1)%driverData.length;
+  }
+  showSlideFull(); setInterval(showSlideFull,3000);
+
+  // --- Export Excel ---
+  window.exportExcel=function(){
+    let wb=XLSX.utils.book_new();
+    let ws_data=[["คนขับ","โทรศัพท์","รถ","ทะเบียน","สถานที่","วันเริ่ม","วันสิ้นสุด","เวลา"]];
+    history.forEach(b=>{
+      let dp=document.querySelector(`#driver option[value='${b.driver}']`)?.dataset.phone||'-';
+      let cp=document.querySelector(`#car option[value='${b.car}']`)?.dataset.plate||'-';
+      ws_data.push([b.driver,dp,b.car,cp,b.location,b.dateFrom,b.dateTo,b.timeFrom+'-'+b.timeTo]);
+    });
+    let ws=XLSX.utils.aoa_to_sheet(ws_data); XLSX.utils.book_append_sheet(wb,ws,"History"); XLSX.writeFile(wb,"BookingHistory.xlsx");
+  }
+
+  // --- Search filter ---
+  document.getElementById('searchInput').addEventListener('input',()=>{historyPage=1; renderHistory();});
+
+  // --- Scroll animation ---
+  window.addEventListener('scroll',()=>{document.querySelectorAll('section,header').forEach(s=>{if(s.getBoundingClientRect().top<window.innerHeight-100)s.classList.add('visible');});});
+
+  // --- Init ---
+  renderBookings(); renderHistory();
+};
+</script>
+</body>
+</html>
